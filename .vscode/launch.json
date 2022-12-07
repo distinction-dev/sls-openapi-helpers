@@ -2,16 +2,14 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Current TS File",
       "type": "node",
       "request": "launch",
-      "runtimeExecutable": "node",
-      "args": ["${relativeFile}"],
-      "runtimeArgs": ["--nolazy", "-r", "ts-node/register/transpile-only"],
-      "envFile": "${workspaceFolder}/.env",
-      "cwd": "${workspaceRoot}",
-      "internalConsoleOptions": "openOnSessionStart",
-      "skipFiles": ["<node_internals>/**", "node_modules/**"]
+      "name": "Execute Command",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}/bin/dev",
+      "args": [
+        // Change to debug the command you want
+      ]
     },
     {
       "type": "node",

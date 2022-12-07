@@ -9,10 +9,16 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "allowSyntheticDefaultImports": true,
+    "importHelpers": true,
     "paths": {
       "@/*": ["src/*"]
     },
-    "baseUrl": "."
+    "baseUrl": ".",
+    "lib": ["ES6"],
+    "target": "ES2019",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "outDir": "./lib",
   },
   "include": ["src/**/*.ts", "tests/**/*.test.ts"]
 }

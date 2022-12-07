@@ -119,3 +119,4 @@ dist
 lib/
 package/
 .DS_Store
+oclif.manifest.json
