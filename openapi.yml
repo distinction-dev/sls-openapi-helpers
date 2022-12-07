@@ -1,0 +1,208 @@
+openapi: "3.1.0"
+
+servers:
+  - url: https://test/com
+
+info:
+  title: Leo Scheduler Service
+  version: v0.0.0-development
+  description: Rest Api for creating schedules
+
+tags:
+  - name: Schedule
+
+paths:
+  "/schedule":
+    post:
+      operationId: createSchedule
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              $ref: "#/components/CreateSchedule"
+      responses:
+        200:
+          description: Successfully created schedule
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/Schedule"
+        400:
+          description: Validation request
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/ValidationErrorResponse"
+  "/schedule/{id}":
+    delete:
+      operationId: deleteSchedule
+      parameters:
+        - allowEmptyValue: false
+          required: true
+          name: id
+          in: path
+          description: The id of the schedule that you want to delete
+          schema:
+            type: string
+      responses:
+        200:
+          description: Successfully removed schedule
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/SuccessResponse"
+        404:
+          description: Schedule not found with this id
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/NotFoundErrorResponse"
+    put:
+      operationId: updateSchedule
+      parameters:
+        - allowEmptyValue: false
+          required: true
+          name: id
+          in: path
+          description: The id of the schedule that you want to update
+          schema:
+            type: string
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              $ref: "#/components/SharedScheduleProperties"
+
+      responses:
+        200:
+          description: Update Successful
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/SuccessResponse"
+
+        400:
+          description: Validation request
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/ValidationErrorResponse"
+
+webhooks:
+  schedule-initiated:
+    post:
+      operationId: scheduleInitiated
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              title: ScheduleInitiatedRequest
+              properties:
+                scheduleId:
+                  type: string
+                  minLength: 21
+                  maxLength: 21
+                payload:
+                  type: object
+              required:
+                - scheduleId
+                - payload
+
+components:
+  BaseModel:
+    type: object
+    properties:
+      id:
+        type: string
+        minLength: 21
+        maxLength: 21
+    required:
+      - id
+  SuccessResponse:
+    type: object
+    properties:
+      message:
+        type: string
+  ValidationErrorResponse:
+    type: object
+    properties:
+      errorMessage:
+        type: string
+  NotFoundErrorResponse:
+    type: object
+    properties:
+      errorMessage:
+        type: string
+
+  # Schedule Properties
+  SharedScheduleProperties:
+    type: object
+    properties:
+      schedule:
+        type: string
+        description: >
+          The expression that defines when the schedule runs. The following formats are supported.  
+
+          `at` expression - `at(yyyy-mm-ddThh:mm:ss)`  
+
+          `rate` expression - `rate(unit value)`  
+
+          `cron` expression - `cron(fields)`  
+
+          You can use at expressions to create one-time schedules that invoke a target once, at the time and in the time zone, that you specify. You can use rate and cron expressions to create recurring schedules. Rate-based schedules are useful when you want to invoke a target at regular intervals, such as every 15 minutes or every five days. Cron-based schedules are useful when you want to invoke a target periodically at a specific time, such as at 8:00 am (UTC+0) every 1st day of the month.  
+
+          A `cron` expression consists of six fields separated by white spaces: `(minutes hours day_of_month month day_of_week year)`  
+
+          A `rate` expression consists of a value as a positive integer, and a unit with the following options: `minute | minutes | hour | hours | day | days`
+      payload:
+        type: object
+        description: The data you want delivered back to you in the request.
+      description:
+        type: string
+        description: A text based description used to make it easy to find the schedule. Over time as the number of scheduled items grow, we might even have to do some manual control over these schedules and that's when this description will come in handy
+      endDate:
+        type: string
+        format: date-time
+        description: The time when you want the schedule to stop, please send an ISO string. This can be ignored if you set the executeOnce to true
+      startDate:
+        type: string
+        format: date-time
+        description: The time when you want the schedule to start, please send an ISO string. This can be ignored if you set the executeOnce to true
+      timezone:
+        type: string
+        description: The timezone that you want the schedule to run in.
+  CreateSchedule:
+    title: CreateSchedule
+    allOf:
+      - $ref: "#/components/SharedScheduleProperties"
+      - type: object
+        properties:
+          disableByDefault:
+            type: boolean
+            default: false
+            description: If for some reason, you want the schedule to be turned off by default, pass this as true.
+        required:
+          - schedule
+          - payload
+
+  ScheduleStatus:
+    type: object
+    properties:
+      state:
+        type: string
+        description: Describes the current state of this schedule, i.e if it's turned on or off
+        enum:
+          - ENABLED
+          - DISABLED
+
+  Schedule:
+    title: Schedule
+    allOf:
+      - $ref: "#/components/BaseModel"
+      - $ref: "#/components/ScheduleStatus"
+      - $ref: "#/components/SharedScheduleProperties"
+      - type: object
+        required:
+          - state
+          - schedule
+          - payload

@@ -9,6 +9,7 @@
       "program": "${workspaceFolder}/bin/dev",
       "args": [
         // Change to debug the command you want
+        "json-schema"
       ]
     },
     {
